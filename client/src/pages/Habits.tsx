@@ -21,6 +21,14 @@ const timeOrder = ['morning', 'afternoon', 'evening', 'night'];
 export default function Habits() {
   const { activeHabits, completedCount, completionRate, getLog, toggleLog, toggling, loading } = useHabits();
   const { stats } = useHabitStatsData();
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const allDone = activeHabits.length > 0 && completedCount === activeHabits.length;
+
+  // Trigger celebration when all habits are done
+  useEffect(() => {
+    if (allDone) setShowCelebration(true);
+  }, [allDone]);
 
   const grouped = timeOrder.map((tod) => ({
     label: timeOfDayLabels[tod],
@@ -34,14 +42,6 @@ export default function Habits() {
       </PageWrapper>
     );
   }
-
-  const allDone = activeHabits.length > 0 && completedCount === activeHabits.length;
-  const [showCelebration, setShowCelebration] = useState(false);
-
-  // Trigger celebration when all habits are done
-  useEffect(() => {
-    if (allDone) setShowCelebration(true);
-  }, [allDone]);
 
   return (
     <PageWrapper title="Daily Routine" subtitle="Stamp your seals. Build your streak.">
