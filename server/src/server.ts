@@ -62,7 +62,11 @@ async function connectDB() {
       console.log('Local MongoDB is not running. Spinning up in-memory MongoDB...');
       try {
         const { MongoMemoryServer } = require('mongodb-memory-server');
-        const mongoServer = await MongoMemoryServer.create();
+        const mongoServer = await MongoMemoryServer.create({
+          instance: {
+            launchTimeout: 60000, // Increase launch timeout to 60 seconds for slower environments
+          },
+        });
         uri = mongoServer.getUri();
         await mongoose.connect(uri);
         console.log('Connected to In-Memory MongoDB successfully! (Zero-Configuration Mode)');
