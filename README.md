@@ -103,35 +103,25 @@ NODE_ENV=development
 > Replace `MONGODB_URI` with your Atlas connection string:  
 > `mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/lifescroll`
 
----
-
 ### 3 — Install dependencies
 
-```bash
-# Server
-cd server && npm install
+From the project root directory:
 
-# Client
-cd ../client && npm install
+```bash
+npm run install:all
 ```
 
 ---
 
 ### 4 — Run the app
 
-Open **two** terminal windows:
+From the project root directory, simply run:
 
 ```bash
-# Terminal 1 — API server (http://localhost:5000)
-cd server
-npm run dev
-
-# Terminal 2 — Vite dev server (http://localhost:5173)
-cd client
-npm run dev
+npm start
 ```
 
-Open **http://localhost:5173** in your browser, register an account, and start scrolling your life. 🖊️
+This will run both the frontend and backend servers concurrently. Open **http://localhost:5173** in your browser, register an account, and start scrolling your life. 🖊️
 
 ---
 
