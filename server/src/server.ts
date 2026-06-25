@@ -50,17 +50,42 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
+async function connectDB() {
+  let uri = MONGODB_URI;
+
+  if (uri.startsWith('mongodb://localhost') || uri.startsWith('mongodb://127.0.0.1')) {
+    try {
+      // Attempt to connect to local MongoDB with a short 2-second timeout
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 2000 });
+      console.log('Connected to local MongoDB');
+    } catch (err) {
+      console.log('Local MongoDB is not running. Spinning up in-memory MongoDB...');
+      try {
+        const { MongoMemoryServer } = require('mongodb-memory-server');
+        const mongoServer = await MongoMemoryServer.create();
+        uri = mongoServer.getUri();
+        await mongoose.connect(uri);
+        console.log('Connected to In-Memory MongoDB successfully! (Zero-Configuration Mode)');
+      } catch (memErr) {
+        console.error('Failed to start in-memory MongoDB:', memErr);
+        process.exit(1);
+      }
+    }
+  } else {
+    try {
+      await mongoose.connect(uri);
+      console.log('Connected to MongoDB');
+    } catch (err) {
+      console.error('MongoDB connection error:', err);
+      process.exit(1);
+    }
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
+}
+
+connectDB();
 
 export default app;
