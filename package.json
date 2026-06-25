@@ -1,0 +1,28 @@
+{
+  "name": "lifescroll",
+  "version": "1.0.0",
+  "description": "Personal Life OS — dark Japanese sumi-e aesthetic fused with game UI",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:server": "npm run build --prefix server",
+    "build:client": "npm run build --prefix client",
+    "build": "npm run build:server && npm run build:client"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "life-os",
+    "habit-tracker",
+    "budget-tracker",
+    "sumi-e",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "asnayem1122",
+  "license": "MIT"
+}

@@ -1,0 +1,18 @@
+# Normalize line endings to LF in the repository
+# regardless of the OS the contributor uses.
+* text=auto eol=lf
+
+# Explicitly mark binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg text
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Lock files — keep as-is
+package-lock.json text eol=lf
