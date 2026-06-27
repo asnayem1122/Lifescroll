@@ -8,11 +8,13 @@ interface Particle {
   vy: number;
   radius: number;
   alpha: number;
+  baseAlpha: number;
   decay: number;
 }
 
 export default function InkParticles() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -27,23 +29,26 @@ export default function InkParticles() {
     let height = (canvas.height = window.innerHeight);
 
     const particles: Particle[] = [];
-    const maxParticles = 60;
+    const maxParticles = 50;
+    const connectionDist = 120;
+    const mouseInfluence = 80;
 
-    const createParticle = (atBottom = false): Particle => {
+    const createParticle = (): Particle => {
+      const baseAlpha = 0.08 + Math.random() * 0.18;
       return {
         x: Math.random() * width,
-        y: atBottom ? height + 10 : Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: -0.1 - Math.random() * 0.4,
-        radius: 1 + Math.random() * 3,
-        alpha: 0.05 + Math.random() * 0.15,
-        decay: 0.0005 + Math.random() * 0.001,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        radius: 1 + Math.random() * 2.5,
+        alpha: baseAlpha,
+        baseAlpha,
+        decay: 0.0003 + Math.random() * 0.0007,
       };
     };
 
-    // Initialize particles
     for (let i = 0; i < maxParticles; i++) {
-      particles.push(createParticle(false));
+      particles.push(createParticle());
     }
 
     const handleResize = () => {
@@ -52,30 +57,94 @@ export default function InkParticles() {
       height = canvas.height = window.innerHeight;
     };
 
-    window.addEventListener('resize', handleResize);
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current.x = e.clientX;
+      mouseRef.current.y = e.clientY;
+    };
 
-    const particleColor = theme === 'dark' ? '255, 255, 255' : '10, 10, 10';
+    const handleMouseLeave = () => {
+      mouseRef.current.x = -9999;
+      mouseRef.current.y = -9999;
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+
+    const particleColor = theme === 'dark' ? '212, 175, 55' : '180, 140, 40';
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const mouseActive = mx > -1000;
+
+      // Update and draw particles
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        // Draw particle with soft glow / blur
+        // Mouse interaction — gentle attraction toward cursor
+        if (mouseActive) {
+          const dx = mx - p.x;
+          const dy = my - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouseInfluence * 3) {
+            const force = (1 - dist / (mouseInfluence * 3)) * 0.02;
+            p.vx += dx * force;
+            p.vy += dy * force;
+          }
+        }
+
+        // Update position
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+
+        // Friction
+        p.vx *= 0.99;
+        p.vy *= 0.99;
+
+        // Clamp alpha
+        if (p.alpha < 0.02) {
+          p.alpha = p.baseAlpha;
+          p.x = Math.random() * width;
+          p.y = Math.random() * height;
+        }
+
+        // Wrap around edges
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+        if (p.y < -10) p.y = height + 10;
+        if (p.y > height + 10) p.y = -10;
+
+        // Draw particle with glow
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${particleColor}, ${p.alpha})`;
         ctx.fill();
 
-        // Update position
-        p.x += p.vx + (Math.random() - 0.5) * 0.05; // Gentle brownian motion
-        p.y += p.vy;
-        p.alpha -= p.decay;
+        // Outer glow ring
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${particleColor}, ${p.alpha * 0.08})`;
+        ctx.fill();
 
-        // Reset particle if off-screen or faded out
-        if (p.y < -10 || p.x < -10 || p.x > width + 10 || p.alpha <= 0) {
-          particles[i] = createParticle(true);
+        // Connection lines to nearby particles
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < connectionDist) {
+            const lineAlpha = (1 - dist / connectionDist) * 0.12;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(${particleColor}, ${lineAlpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
         }
       }
 
@@ -86,6 +155,8 @@ export default function InkParticles() {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, [theme]);
@@ -93,7 +164,7 @@ export default function InkParticles() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[1] opacity-70"
+      className="fixed inset-0 pointer-events-none z-[1]"
     />
   );
 }

@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Repeat } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Transaction } from '../../types/transaction';
 import { formatBDT } from '../../utils/currency';
@@ -34,6 +34,9 @@ export default function TransactionRow({ transaction, onEdit, onDelete }: Transa
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium truncate">{transaction.title}</span>
+          {transaction.recurring && (
+            <Repeat size={12} className="shrink-0" style={{ color: 'var(--accent-gold)' }} title={`Recurring (${transaction.recurringInterval})`} />
+          )}
           <span
             className="text-[10px] px-2 py-0.5 rounded-full"
             style={{ background: `${borderColor}20`, color: borderColor }}

@@ -38,3 +38,8 @@ export async function getSummary() {
   const { data } = await api.get('/transactions/summary');
   return data;
 }
+
+export async function generateRecurring() {
+  const { data } = await api.post('/transactions/generate-recurring');
+  return data as { created: number; titles: string[] };
+}

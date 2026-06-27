@@ -8,6 +8,8 @@ export interface ITransaction extends Document {
   category: string;
   date: Date;
   note?: string;
+  recurring?: boolean;
+  recurringInterval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   createdAt: Date;
 }
 
@@ -19,6 +21,8 @@ const TransactionSchema = new Schema<ITransaction>({
   category: { type: String, required: true },
   date: { type: Date, required: true, default: Date.now },
   note: { type: String },
+  recurring: { type: Boolean, default: false },
+  recurringInterval: { type: String, enum: ['daily', 'weekly', 'monthly', 'yearly'] },
   createdAt: { type: Date, default: Date.now },
 });
 

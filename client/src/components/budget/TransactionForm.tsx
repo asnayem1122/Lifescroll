@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
+import { Repeat } from 'lucide-react';
 import type { TransactionFormData } from '../../types/transaction';
 import { today } from '../../utils/date';
 
 const categories = [
   'Food', 'Transport', 'Salary', 'Freelance', 'Entertainment',
   'Health', 'Shopping', 'Bills', 'CP Contest', 'University', 'Other',
+];
+
+const intervals = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' },
 ];
 
 interface Props {
@@ -109,6 +117,42 @@ export default function TransactionForm({ onSubmit, initial, loading }: Props) {
           value={form.date}
           onChange={(e) => setForm({ ...form, date: e.target.value })}
         />
+      </div>
+
+      <div className="flex items-center gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => setForm({ ...form, recurring: !form.recurring, recurringInterval: !form.recurring ? 'monthly' : undefined })}
+          className="flex items-center gap-2 px-3 py-2 rounded text-xs transition-all"
+          style={{
+            background: form.recurring ? 'rgba(212,175,55,0.1)' : 'var(--surface)',
+            border: `1px solid ${form.recurring ? 'var(--accent-gold)' : '#222'}`,
+            color: form.recurring ? 'var(--accent-gold)' : 'var(--text-secondary)',
+          }}
+        >
+          <Repeat size={14} />
+          {form.recurring ? 'Recurring' : 'One-time'}
+        </button>
+
+        {form.recurring && (
+          <div className="flex gap-1">
+            {intervals.map((int) => (
+              <button
+                key={int.value}
+                type="button"
+                onClick={() => setForm({ ...form, recurringInterval: int.value as 'daily' | 'weekly' | 'monthly' | 'yearly' })}
+                className="px-2 py-1.5 rounded text-xs transition-all"
+                style={{
+                  background: form.recurringInterval === int.value ? 'var(--accent-gold)' : 'transparent',
+                  color: form.recurringInterval === int.value ? '#080808' : 'var(--text-secondary)',
+                  border: '1px solid #222',
+                }}
+              >
+                {int.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div>

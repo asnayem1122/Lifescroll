@@ -37,7 +37,7 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Nirmala UI', 'Shonar Bangla', 'Noto Sans Bengali', sans-serif;
   background-color: var(--bg);
   color: var(--text-primary);
   min-height: 100vh;
@@ -45,7 +45,7 @@ body {
 }
 
 .font-serif {
-  font-family: 'Noto Serif', serif;
+  font-family: 'Noto Serif', 'Noto Sans Bengali', 'Nirmala UI', 'Shonar Bangla', serif;
 }
 
 .text-gradient-gold {
@@ -56,19 +56,34 @@ body {
 }
 
 .glow-gold {
-  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 40px rgba(212, 175, 55, 0.1);
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInScale {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 4px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card:hover {
   border-color: var(--card-hover-border);
-  box-shadow: var(--gold-glow);
+  box-shadow: 0 4px 24px rgba(212, 175, 55, 0.08), 0 1px 4px rgba(212, 175, 55, 0.04);
+  transform: translateY(-2px);
+}
+
+.card:active {
+  transform: translateY(0);
 }
 
 .card-corners {
@@ -85,6 +100,7 @@ body {
   border-top: 2px solid var(--accent-gold);
   border-right: 2px solid var(--accent-gold);
   opacity: 0.5;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-corners::after {
@@ -97,6 +113,19 @@ body {
   border-bottom: 2px solid var(--accent-gold);
   border-left: 2px solid var(--accent-gold);
   opacity: 0.5;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-corners:hover::before {
+  width: 30px;
+  height: 30px;
+  opacity: 0.8;
+}
+
+.card-corners:hover::after {
+  width: 30px;
+  height: 30px;
+  opacity: 0.8;
 }
 
 @keyframes mistDrift1 {
@@ -137,10 +166,20 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes pulseSoft {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes barShine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .skeleton {
-  background: linear-gradient(90deg, #0f0f0f 25%, #151515 50%, #0f0f0f 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, #0f0f0f 25%, #151515 50%, #0f0f0f 75%, #151515 100%);
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
   border-radius: 4px;
 }
 
@@ -198,15 +237,21 @@ input::placeholder, textarea::placeholder {
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  transform: scale(1.03);
 }
 
 .btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .btn-gold {
@@ -216,6 +261,7 @@ input::placeholder, textarea::placeholder {
 
 .btn-gold:hover {
   background: #e0c050;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
 }
 
 .btn-crimson {
@@ -225,6 +271,7 @@ input::placeholder, textarea::placeholder {
 
 .btn-crimson:hover {
   background: #a00000;
+  box-shadow: 0 0 20px rgba(139, 0, 0, 0.35);
 }
 
 .btn-ghost {
@@ -236,4 +283,10 @@ input::placeholder, textarea::placeholder {
 .btn-ghost:hover {
   border-color: var(--accent-gold);
   color: var(--accent-gold);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.12);
+  transform: scale(1.03);
+}
+
+.btn-ghost:active {
+  transform: scale(0.96);
 }

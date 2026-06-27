@@ -1,4 +1,5 @@
 import { Menu, Sun, Moon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import SealStamp from './SealStamp';
 
@@ -11,13 +12,19 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
 
   return (
     <header
-      className="fixed top-0 left-0 lg:left-[240px] right-0 h-14 z-30 flex items-center justify-between px-4 lg:px-6"
+      className="h-14 flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
       style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
     >
       <div className="flex items-center gap-3">
-        <button onClick={onMenuClick} className="lg:hidden p-2" style={{ color: 'var(--text-primary)', minWidth: '44px', minHeight: '44px' }}>
+        <motion.button
+          onClick={onMenuClick}
+          className="lg:hidden p-2"
+          style={{ color: 'var(--text-primary)', minWidth: '44px', minHeight: '44px' }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
           <Menu size={20} />
-        </button>
+        </motion.button>
         <div className="lg:hidden">
           <SealStamp size={28} />
         </div>
@@ -26,9 +33,9 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
-        <button
+        <motion.button
           onClick={toggle}
-          className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+          className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{
             background: 'var(--accent-crimson)',
             color: '#e8e8e8',
@@ -36,9 +43,12 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             minWidth: '44px',
             minHeight: '44px',
           }}
+          whileHover={{ scale: 1.1, boxShadow: '0 0 20px rgba(139,0,0,0.4)' }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
         >
           {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-        </button>
+        </motion.button>
       </div>
     </header>
   );

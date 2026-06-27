@@ -88,14 +88,30 @@ export default function Dashboard() {
                       <button
                         onClick={() => toggleLog(habit._id)}
                         disabled={toggling === habit._id}
-                        className="px-2 py-0.5 rounded text-[10px]"
+                        className="px-2 py-0.5 rounded text-[10px] transition-all duration-200"
                         style={{
                           background: log?.completed ? 'rgba(212,175,55,0.15)' : 'transparent',
                           border: `1px solid ${log?.completed ? 'var(--accent-gold)' : '#333'}`,
                           color: log?.completed ? 'var(--accent-gold)' : '#444',
                         }}
+                        onMouseEnter={(e) => {
+                          if (!log?.completed) {
+                            e.currentTarget.style.background = 'rgba(212,175,55,0.08)';
+                            e.currentTarget.style.borderColor = 'var(--accent-gold)';
+                            e.currentTarget.style.color = 'var(--accent-gold)';
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!log?.completed) {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.borderColor = '#333';
+                            e.currentTarget.style.color = '#444';
+                            e.currentTarget.style.transform = 'scale(1)';
+                          }
+                        }}
                       >
-                        {log?.completed ? '✓ Stamped' : 'Stamp'}
+                        {log?.completed ? '✓ Stamped' : toggling === habit._id ? '...' : 'Stamp'}
                       </button>
                     </div>
                   );

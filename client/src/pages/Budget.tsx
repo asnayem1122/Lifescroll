@@ -111,14 +111,20 @@ export default function Budget() {
               {hasBudget && !editing && (
                 <div
                   className="h-2 rounded-full overflow-hidden"
-                  style={{ background: '#1a1a1a' }}
+                  style={{ background: '#1a1a1a', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}
                 >
                   <div
-                    className="h-full rounded-full transition-all duration-500"
+                    className="h-full rounded-full"
                     style={{
                       width: `${Math.min(percentage, 100)}%`,
-                      background: isOver ? 'var(--accent-crimson)' : 'var(--accent-gold)',
+                      background: isOver
+                        ? 'linear-gradient(90deg, #8b0000, #c0392b)'
+                        : 'linear-gradient(90deg, #d4af37, #e0c050)',
+                      transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
                       animation: isOver ? 'pulseCrimson 2s ease-in-out infinite' : 'none',
+                      boxShadow: isOver
+                        ? '0 0 8px rgba(139,0,0,0.4)'
+                        : '0 0 6px rgba(212,175,55,0.2)',
                     }}
                   />
                 </div>

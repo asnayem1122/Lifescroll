@@ -1,215 +1,64 @@
-import { useState } from 'react';
-import { Plus, GripVertical, Pencil, Trash2, Check, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { Sun, Moon, User, Mail } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
-import { useHabits } from '../hooks/useHabits';
-import type { Habit, HabitFormData } from '../types/habit';
-import Skeleton from '../components/ui/Skeleton';
-
-function SortableHabit({
-  habit,
-  onEdit,
-  onDelete,
-}: {
-  habit: Habit;
-  onEdit: (h: Habit) => void;
-  onDelete: (id: string) => void;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: habit._id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="card p-3 flex items-center gap-3">
-      <button {...attributes} {...listeners} style={{ color: 'var(--text-secondary)', cursor: 'grab' }}>
-        <GripVertical size={16} />
-      </button>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{habit.name}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.1)', color: 'var(--accent-gold)' }}>
-            {habit.category}
-          </span>
-          <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>{habit.timeOfDay}</span>
-        </div>
-      </div>
-      <div className="flex gap-1">
-        <button onClick={() => onEdit(habit)} className="p-1.5 rounded" style={{ color: 'var(--text-secondary)' }}>
-          <Pencil size={14} />
-        </button>
-        <button onClick={() => onDelete(habit._id)} className="p-1.5 rounded" style={{ color: 'var(--accent-crimson)' }}>
-          <Trash2 size={14} />
-        </button>
-      </div>
-    </div>
-  );
-}
+import BrushDivider from '../components/layout/BrushDivider';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Settings() {
-  const { habits, loading, create, update, remove, reorder } = useHabits();
-  const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState<Habit | null>(null);
-  const [form, setForm] = useState<HabitFormData>({
-    name: '',
-    category: 'other',
-    timeOfDay: 'morning',
-  });
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = habits.findIndex((h) => h._id === active.id);
-    const newIndex = habits.findIndex((h) => h._id === over.id);
-    const reordered = arrayMove(habits, oldIndex, newIndex);
-    reorder(reordered.map((h, i) => ({ id: h._id, order: i })));
-  };
-
-  const handleSubmit = async () => {
-    if (editing) {
-      await update(editing._id, form);
-    } else {
-      await create(form);
-    }
-    setShowForm(false);
-    setEditing(null);
-    setForm({ name: '', category: 'other', timeOfDay: 'morning' });
-  };
-
-  const handleEdit = (habit: Habit) => {
-    setEditing(habit);
-    setForm({ name: habit.name, category: habit.category, timeOfDay: habit.timeOfDay });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this habit?')) {
-      await remove(id);
-    }
-  };
-
-  if (loading) {
-    return (
-      <PageWrapper title="Settings" subtitle="Manage your habits and preferences">
-        <Skeleton className="h-[60px]" count={8} />
-      </PageWrapper>
-    );
-  }
+  const { user } = useAuth();
+  const { theme, toggle } = useTheme();
 
   return (
-    <PageWrapper
-      title="Settings"
-      subtitle="Manage your habits and preferences"
-      action={
-        <button
-          onClick={() => { setEditing(null); setForm({ name: '', category: 'other', timeOfDay: 'morning' }); setShowForm(true); }}
-          className="btn btn-gold text-xs"
-        >
-          <Plus size={14} /> Add Habit
-        </button>
-      }
-    >
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="card p-4 mb-4 overflow-hidden"
-          >
-            <div className="flex flex-wrap gap-3 items-end">
-              <div className="flex-1 min-w-[150px]">
-                <label className="block text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>Name</label>
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Habit name"
-                  className="text-sm"
-                />
-              </div>
-              <div className="min-w-[120px]">
-                <label className="block text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>Category</label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value as Habit['category'] })}
-                  className="text-sm"
-                >
-                  <option value="prayer">Prayer</option>
-                  <option value="study">Study</option>
-                  <option value="cp">CP</option>
-                  <option value="health">Health</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="min-w-[120px]">
-                <label className="block text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>Time</label>
-                <select
-                  value={form.timeOfDay}
-                  onChange={(e) => setForm({ ...form, timeOfDay: e.target.value as Habit['timeOfDay'] })}
-                  className="text-sm"
-                >
-                  <option value="morning">Morning</option>
-                  <option value="afternoon">Afternoon</option>
-                  <option value="evening">Evening</option>
-                  <option value="night">Night</option>
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={handleSubmit} className="btn btn-gold text-xs">
-                  <Check size={14} /> {editing ? 'Update' : 'Add'}
-                </button>
-                <button onClick={() => { setShowForm(false); setEditing(null); }} className="btn btn-ghost text-xs">
-                  <X size={14} />
-                </button>
-              </div>
+    <PageWrapper title="Settings" subtitle="Your scroll preferences">
+      <div className="space-y-6 max-w-lg">
+        <div className="card card-corners p-5">
+          <h2 className="font-serif text-sm mb-4" style={{ color: 'var(--accent-gold)' }}>Account</h2>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <User size={16} style={{ color: 'var(--text-secondary)' }} />
+              <span style={{ color: 'var(--text-primary)' }}>{user?.name || 'User'}</span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={habits.map((h) => h._id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2">
-            {habits.length === 0 ? (
-              <div className="card p-10 text-center">
-                <p className="font-serif italic" style={{ color: 'var(--text-secondary)', opacity: 0.5 }}>
-                  No tasks marked today<br />The scroll remains untouched<br />Begin with one step
-                </p>
-              </div>
-            ) : (
-              habits.map((habit) => (
-                <SortableHabit key={habit._id} habit={habit} onEdit={handleEdit} onDelete={handleDelete} />
-              ))
-            )}
+            <div className="flex items-center gap-3 text-sm">
+              <Mail size={16} style={{ color: 'var(--text-secondary)' }} />
+              <span style={{ color: 'var(--text-primary)' }}>{user?.email || '—'}</span>
+            </div>
           </div>
-        </SortableContext>
-      </DndContext>
+        </div>
+
+        <BrushDivider />
+
+        <div className="card card-corners p-5">
+          <h2 className="font-serif text-sm mb-4" style={{ color: 'var(--accent-gold)' }}>Appearance</h2>
+          <div className="flex items-center justify-between">
+            <span className="text-sm" style={{ color: 'var(--text-primary)' }}>Theme</span>
+            <button
+              onClick={toggle}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+              style={{
+                background: theme === 'dark' ? 'var(--accent-crimson)' : '#d4af37',
+                border: `2px solid ${theme === 'dark' ? 'rgba(192,57,43,0.6)' : 'rgba(212,175,55,0.6)'}`,
+                color: theme === 'dark' ? '#e8e8e8' : '#080808',
+              }}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
+          <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
+            Currently: {theme === 'dark' ? 'Dark (Sumi-e)' : 'Light (Washi)'}
+          </p>
+        </div>
+
+        <BrushDivider />
+
+        <div className="card card-corners p-5">
+          <h2 className="font-serif text-sm mb-4" style={{ color: 'var(--accent-gold)' }}>About</h2>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Lifescroll v1.0.0<br />
+            A personal life OS with a Japanese sumi-e aesthetic.<br />
+            Track habits, budget, and transactions in one place.
+          </p>
+        </div>
+      </div>
     </PageWrapper>
   );
 }

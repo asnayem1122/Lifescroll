@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -19,23 +19,41 @@ import Sidebar from './components/layout/Sidebar';
 import Navbar from './components/layout/Navbar';
 import MistLayer from './components/layout/MistLayer';
 import MountainBg from './components/layout/MountainBg';
-import InkSplashTransition from './components/layout/InkSplashTransition';
 import InkParticles from './components/layout/InkParticles';
+
+const ease = [0.4, 0, 0.2, 1] as const;
+
+const pageTransition = {
+  hidden: { opacity: 0, y: 6 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.18, ease } },
+  exit: { opacity: 0, y: -6, transition: { duration: 0.12, ease } },
+};
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="flex h-screen w-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <div className="flex flex-col flex-1 min-w-0 h-full">
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto relative z-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageTransition}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
       <MistLayer />
       <MountainBg />
-      <main className="pt-14 lg:pl-[240px] relative z-10">
-        <AnimatePresence mode="wait">
-          {children}
-        </AnimatePresence>
-      </main>
     </div>
   );
 }
@@ -95,7 +113,6 @@ export default function App() {
         <AuthProvider>
           <AppRoutes />
           <InkParticles />
-          <InkSplashTransition />
           <Toaster
             position="bottom-right"
             toastOptions={{

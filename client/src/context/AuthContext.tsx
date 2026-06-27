@@ -31,24 +31,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
+  const clearAuth = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  }, []);
+
   const fetchUser = useCallback(async () => {
-    if (!token) {
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) {
       setLoading(false);
       return;
     }
+    setToken(storedToken);
     try {
       const res = await api.get('/auth/me');
       setUser(res.data);
     } catch {
-      localStorage.removeItem('token');
-      setToken(null);
-      setUser(null);
+      clearAuth();
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [clearAuth]);
 
-  useEffect(() => { fetchUser(); }, [fetchUser]);
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  useEffect(() => {
+    const handleLogout = () => {
+      clearAuth();
+      setLoading(false);
+    };
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
+  }, [clearAuth]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -75,9 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
+    clearAuth();
   };
 
   return (

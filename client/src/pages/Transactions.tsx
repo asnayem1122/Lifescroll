@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, Filter } from 'lucide-react';
+import { Plus, Filter, Repeat } from 'lucide-react';
+import toast from 'react-hot-toast';
 import PageWrapper from '../components/layout/PageWrapper';
 import TransactionRow from '../components/budget/TransactionRow';
 import TransactionForm from '../components/budget/TransactionForm';
@@ -8,16 +9,18 @@ import Skeleton from '../components/ui/Skeleton';
 import { useTransactions } from '../hooks/useTransactions';
 import type { Transaction, TransactionFormData } from '../types/transaction';
 import { today } from '../utils/date';
+import * as api from '../api/transactions';
 
 import BrushDivider from '../components/layout/BrushDivider';
 
 const categories = ['All', 'Food', 'Transport', 'Salary', 'Freelance', 'Entertainment', 'Health', 'Shopping', 'Bills', 'CP Contest', 'University', 'Other'];
 
 export default function Transactions() {
-  const { transactions, total, totalPages, page, loading, filters, setPage, setFilters, create, update, remove } = useTransactions();
+  const { transactions, total, totalPages, page, loading, filters, setPage, setFilters, create, update, remove, refresh } = useTransactions();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const handleSubmit = async (data: TransactionFormData) => {
     if (editing) {
@@ -45,14 +48,36 @@ export default function Transactions() {
     setModalOpen(true);
   };
 
+  const handleGenerateRecurring = async () => {
+    setGenerating(true);
+    try {
+      const result = await api.generateRecurring();
+      if (result.created > 0) {
+        toast.success(`Generated ${result.created} recurring transactions`);
+        refresh();
+      } else {
+        toast.success('No new recurring transactions needed');
+      }
+    } catch {
+      toast.error('Failed to generate recurring transactions');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <PageWrapper
       title="Transactions"
       subtitle="Every entry tells a story"
       action={
-        <button onClick={openAdd} className="btn btn-gold text-sm">
-          <Plus size={16} /> Add
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleGenerateRecurring} className="btn btn-ghost text-xs" disabled={generating}>
+            <Repeat size={14} /> {generating ? '...' : 'Recurring'}
+          </button>
+          <button onClick={openAdd} className="btn btn-gold text-sm">
+            <Plus size={16} /> Add
+          </button>
+        </div>
       }
     >
       <div className="flex flex-wrap gap-2 items-center mb-4">
@@ -128,16 +153,30 @@ export default function Transactions() {
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className="w-8 h-8 rounded text-xs"
-              style={{
-                background: p === page ? 'var(--accent-gold)' : 'var(--surface)',
-                color: p === page ? '#080808' : 'var(--text-secondary)',
-                border: '1px solid #222',
-              }}
-            >
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className="w-8 h-8 rounded text-xs transition-all duration-200"
+                style={{
+                  background: p === page ? 'var(--accent-gold)' : 'var(--surface)',
+                  color: p === page ? '#080808' : 'var(--text-secondary)',
+                  border: '1px solid #222',
+                }}
+                onMouseEnter={(e) => {
+                  if (p !== page) {
+                    e.currentTarget.style.borderColor = 'var(--accent-gold)';
+                    e.currentTarget.style.color = 'var(--accent-gold)';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (p !== page) {
+                    e.currentTarget.style.borderColor = '#222';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }
+                }}
+              >
               {p}
             </button>
           ))}

@@ -7,6 +7,8 @@ export interface Transaction {
   category: string;
   date: string;
   note?: string;
+  recurring?: boolean;
+  recurringInterval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   createdAt: string;
 }
 
@@ -17,6 +19,8 @@ export interface TransactionFormData {
   category: string;
   date: string;
   note?: string;
+  recurring?: boolean;
+  recurringInterval?: 'daily' | 'weekly' | 'monthly' | 'yearly';
 }
 
 export interface TransactionsResponse {

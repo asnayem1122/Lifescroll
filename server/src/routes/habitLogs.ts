@@ -104,9 +104,7 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
             current = tempStreak;
           }
         } else {
-          if (i > 0) {
-            currentStreakBroken = true;
-          }
+          currentStreakBroken = true;
           tempStreak = 0;
         }
         checkDate.setDate(checkDate.getDate() - 1);
